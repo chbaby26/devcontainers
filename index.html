@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense</title>
+  
+    <style>
+       /*使用 Bootstrap 的風格*/
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+     
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      
+      th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+      }
+      th {
+        background-color: #36cef4;
+        color: black;
+      }
+      tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+      input[type='date'] , input[type='number'],input[type='number  '] {
+        padding: 8px;
+        width: 100%;
+      }
+      button {
+        padding: 8px 16px;
+      }
+      .form-group {
+        margin-bottom: 16px;
+
+      }
+
+      /*form 表單用 bootstrap style 風格*/ 
+      input[type='date'], input[type='text'], input[type='number'], select {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      input[type='submit'] {
+        width: 100%;
+        background-color: #4CAF50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      input[type='submit']:hover {
+        background-color: #45a049;
+      }
+      div.row {
+        display: flex;
+      }
+      div.col-3 {
+        flex: 25%;
+        padding: 0 4px;
+      }
+      /*新增刪除按鈕用bootstrap style 風格*/
+      button {
+        background-color: #36f4e7;
+        color:black;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+        button:hover {
+            background-color: #45a049;
+        }
+        /*下拉選單用bootstrap style 風格*/
+              select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+
+
+      .form-group select {
+        width:
+    </style>
+
+</head>
+
+<body>
+  <div class="container"> 
+    <h1>Expense</h1>
+    <form>
+        <div class="form-group row">
+          <div class="col-3">
+            <input type="date" name="date" required>
+          </div>
+            <div class="col-3">
+                <select name="category" required>
+                    <option value="">請選擇</option>
+                    <option value="交通">交通</option>
+                    <option value="飲食">飲食</option>
+                    <option value="住宿">住宿</option>
+                </select>
+            </div>
+            <div class="col-3">
+                <input type="number" name="amount" placeholder="Amount" required>
+            </div>
+            <div class="col-3">
+                <input type="submit" value="新增">
+            </div>           
+        </div>
+    </form>
+  </div>
+  <script>
+
+    const apiUrl = 'https://localhost:7075/api/expense/';
+
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    function renderExpense(expense) {
+      console.table(expense);
+        const table = document.querySelector('table');
+        const tr = document.createElement('tr');        
+        tr.innerHTML = `
+          <td>${expense.date}</td>
+          <td>${expense.category}</td>
+          <td>${expense.amount}</td>
+          <td>
+            <button onclick="deleteExpense(${expense.id}">刪除</button>
+          </td>
+        `;
+        table.appendChild(tr);  
+    }
+    function refreshTable() {
+        const table = document.querySelector('table');
+        table.innerHTML = `
+          <tr>
+            <th>日期</th>
+            <th>類別</th>
+            <th>金額</th>
+            <th>操作</th>
+          </tr>
+        `;        
+    }
+
+    function getExpenses() {
+        // 使用以下資料模擬從伺服器取得的資料
+        const expenses = [
+          {
+            id: 1,
+            date: '2021-01-01',
+            category: '交通',
+            amount: 100
+          },
+          {
+            id: 2,
+            date: '2021-01-02',
+            category: '飲食',
+            amount: 200
+          },
+          {
+            id: 3,
+            date: '2021-01-03',
+            category: '住宿',
+            amount: 300
+          }
+        ];
+        expenses.forEach(expense => renderExpense(expense));
+    }
+
+    function postExpense() {
+        const form = document.querySelector('#expenseForm');
+        const formData = new FormData(form);
+        const expense = {
+          date: formData.get('date'),
+          category: formData.get('category'),
+          amount: formData.get('amount')
+        };
+        fetch(apiUrl, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(expense)
+        })
+        .then(response => response.json())
+        .then(data => {
+          renderExpense(data);
+          form.reset();
+        });
+    }
+    function deleteExpense(id) {
+        fetch(apiUrl + id, {
+          method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+        });
+
+    }
+    function queryexpense() {
+        fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+        });
+    }
+    const table = document.createElement('table');
+    document.querySelector('.container').appendChild(table);
+    //document.body.appendChild(table);
+    refreshTable();
+    document.querySelector("input[type='submit']").addEventListener('click', postExpense);
+    getExpenses();
+  </script>
+</body>
+
+</html>
